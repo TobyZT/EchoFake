@@ -1,5 +1,4 @@
 {
-  "path": { "trainset": "./EchoFake" },
   "train": {
     "exp_name": "AASIST",
     "batch_size": 32,

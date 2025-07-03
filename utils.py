@@ -1,6 +1,11 @@
 import numpy as np
 import torch
-from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.metrics import (
+    precision_score,
+    recall_score,
+    f1_score,
+    precision_recall_curve,
+)
 
 
 def pad(x, max_len=64000):
@@ -54,7 +59,7 @@ def compute_f1(labels, preds):
     precision = precision_score(labels, preds, average="macro")
     recall = recall_score(labels, preds, average="macro")
     f1 = f1_score(labels, preds, average="macro")
-    print(f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}\n")
+    # print(f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
     return precision, recall, f1
 
 
@@ -95,19 +100,30 @@ def compute_det_curve(target_scores, nontarget_scores):
     return frr, far, thresholds
 
 
-def compute_eer(pred, label):
-    """Returns equal error rate (EER) and the corresponding threshold."""
-    if isinstance(pred, torch.Tensor):
-        pred, label = pred.cpu().numpy(), label.cpu().numpy()
+# def compute_eer(pred, label):
+#     """Returns equal error rate (EER) and the corresponding threshold."""
+#     if isinstance(pred, torch.Tensor):
+#         pred, label = pred.cpu().numpy(), label.cpu().numpy()
 
-    pred, label = np.array(pred).flatten(), np.array(label).flatten()
-    target_scores = pred[label == 1.0]
-    nontarget_scores = pred[label == 0.0]
+#     pred, label = np.array(pred).flatten(), np.array(label).flatten()
+#     target_scores = pred[label == 1.0]
+#     nontarget_scores = pred[label == 0.0]
+#     frr, far, thresholds = compute_det_curve(target_scores, nontarget_scores)
+#     abs_diffs = np.abs(frr - far)
+#     min_index = np.argmin(abs_diffs)
+#     eer = np.mean((frr[min_index], far[min_index]))
+#     return eer  # , thresholds[min_index]
+
+
+def compute_eer(target_scores, nontarget_scores):
+    """Returns equal error rate (EER) and the corresponding threshold."""
+    target_scores = np.array(target_scores).flatten()
+    nontarget_scores = np.array(nontarget_scores).flatten()
     frr, far, thresholds = compute_det_curve(target_scores, nontarget_scores)
     abs_diffs = np.abs(frr - far)
     min_index = np.argmin(abs_diffs)
     eer = np.mean((frr[min_index], far[min_index]))
-    return eer  # , thresholds[min_index]
+    return eer, thresholds[min_index]
 
 
 def cosine_annealing(step, total_steps, lr_max, lr_min):

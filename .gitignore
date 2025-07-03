@@ -13,4 +13,4 @@ wheels/
 EchoFake/
 
 # exp
-exp/
+exp*

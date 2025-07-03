@@ -546,6 +546,10 @@ class AASIST(nn.Module):
 
         self.out_layer = nn.Linear(5 * gat_dims[1], num_classes)
 
+        ########## load pretrained ###########
+        # weights = torch.load("models/weights/AASIST.pth")
+        # self.load_state_dict(weights)
+
     def forward(self, x, Freq_aug=False):
 
         x = x.unsqueeze(1)
@@ -629,3 +633,18 @@ class AASIST(nn.Module):
         output = self.out_layer(last_hidden)
 
         return last_hidden, output
+
+
+if __name__ == "__main__":
+    # weights = torch.load("models/weights/AASIST.pth")
+    model = AASIST(
+        d_args={
+            "architecture": "AASIST",
+            "nb_samp": 64600,
+            "first_conv": 128,
+            "filts": [70, [1, 32], [32, 32], [32, 64], [64, 64]],
+            "gat_dims": [64, 32],
+            "pool_ratios": [0.5, 0.7, 0.5, 0.5],
+            "temperatures": [2.0, 2.0, 100.0, 100.0],
+        }
+    )

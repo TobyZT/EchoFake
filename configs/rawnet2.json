@@ -1,5 +1,4 @@
 {
-  "path": { "trainset": "./EchoFake" },
   "train": {
     "exp_name": "RawNet2",
     "batch_size": 128,
