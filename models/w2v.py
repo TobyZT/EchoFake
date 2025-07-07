@@ -104,7 +104,7 @@ class BackEnd(nn.Module):
         return logits, feat_utt
 
 
-class SCLW2V(nn.Module):
+class W2VLinear(nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -145,7 +145,7 @@ class SCLW2V(nn.Module):
 
 if __name__ == "__main__":
     x = torch.randn(32, 64000).to("cuda:1")
-    model = SCLW2V().to("cuda:1")
+    model = W2VLinear().to("cuda:1")
     states = torch.load("models/weights/epoch_30.pth")
     model.load_state_dict(states)
     out, feats, emb = model(x)

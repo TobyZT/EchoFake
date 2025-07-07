@@ -1,7 +1,7 @@
 import lightning as L
 import torch
 
-from models import RawNet2, AASIST, SCLW2V
+from models import RawNet2, AASIST, W2VLinear
 from utils import *
 from data import EchoFakeModule
 
@@ -139,12 +139,12 @@ class AASISTTrainer(BaseTrainer):
         return loss
 
 
-class SCLW2VTrainer(BaseTrainer):
+class W2VTrainer(BaseTrainer):
     def __init__(self, config):
         super().__init__()
         self.config = config
 
-        self.model = SCLW2V()
+        self.model = W2VLinear()
         # states = torch.load("models/weights/conf-3-linear.pth")
         # self.model.load_state_dict(states)
 
@@ -183,17 +183,17 @@ class SCLW2VTrainer(BaseTrainer):
         self.train_num_total += bs
         _, batch_pred = out.max(dim=1)
         self.train_num_correct += (batch_pred == y).sum(dim=0).item()
-        loss_ce = self.loss_ce(out, y)
-        feats = feats.unsqueeze(1)
-        loss_cf1 = 1 / bs * supcon_loss(feats, labels=y)
-        emb = emb.unsqueeze(1)
-        emb = emb.unsqueeze(-1)
-        loss_cf2 = 1 / bs * supcon_loss(emb, labels=y)
-        loss = loss_ce + loss_cf1 + loss_cf2
+        loss = self.loss_ce(out, y)
+        # feats = feats.unsqueeze(1)
+        # loss_cf1 = 1 / bs * supcon_loss(feats, labels=y)
+        # emb = emb.unsqueeze(1)
+        # emb = emb.unsqueeze(-1)
+        # loss_cf2 = 1 / bs * supcon_loss(emb, labels=y)
+        # loss = loss_ce + loss_cf1 + loss_cf2
 
-        self.log("train/loss_ce", loss_ce, sync_dist=True)
-        self.log("train/loss_cf1", loss_cf1, sync_dist=True)
-        self.log("train/loss_cf2", loss_cf2, sync_dist=True)
+        # self.log("train/loss_ce", loss_ce, sync_dist=True)
+        # self.log("train/loss_cf1", loss_cf1, sync_dist=True)
+        # self.log("train/loss_cf2", loss_cf2, sync_dist=True)
         self.log("train/total_loss", loss, sync_dist=True)
         return loss
 

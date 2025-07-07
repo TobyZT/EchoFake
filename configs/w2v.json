@@ -1,6 +1,6 @@
 {
   "train": {
-    "exp_name": "SCL-W2V",
+    "exp_name": "W2V-Linear-ITW",
     "batch_size": 32,
     "num_epochs": 40,
     "num_workers": 16,
@@ -8,7 +8,7 @@
     "check_val_every_n_epoch": 2,
     "seed": 3939,
     "save_top_k": 1,
-    "trainset": "EchoFake",
+    "trainset": "inthewild",
     "num_classes": 2
   },
   "optimizer": { "name": "Adam", "lr": 1e-5, "weight_decay": 1e-4 },

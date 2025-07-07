@@ -55,10 +55,10 @@ def data_collator(features):
     }
 
 
-def compute_f1(labels, preds):
-    precision = precision_score(labels, preds, average="macro")
-    recall = recall_score(labels, preds, average="macro")
-    f1 = f1_score(labels, preds, average="macro")
+def compute_f1(labels, preds, average="weighted"):
+    precision = precision_score(labels, preds, average=average)
+    recall = recall_score(labels, preds, average=average)
+    f1 = f1_score(labels, preds, average=average)
     # print(f"Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}")
     return precision, recall, f1
 

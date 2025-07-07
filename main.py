@@ -14,8 +14,8 @@ from lightning.pytorch import loggers as pl_loggers
 from lightning.pytorch.callbacks import ModelCheckpoint
 import json
 
-from train import RawNet2Trainer, AASISTTrainer, SCLW2VTrainer
-from data import EchoFakeModule, ASVspoof2019
+from train import RawNet2Trainer, AASISTTrainer, W2VTrainer
+from data import EchoFakeModule, ASVspoof2019, IntheWild
 
 CUDA_VISIBLE_DEVICES = [1]
 
@@ -25,8 +25,8 @@ def get_trainer(model_name):
         return RawNet2Trainer
     elif model_name.lower() == "aasist":
         return AASISTTrainer
-    elif model_name.lower() == "sclw2v":
-        return SCLW2VTrainer
+    elif model_name.lower() == "w2v":
+        return W2VTrainer
 
 
 def get_dataset(dataset_name, config):
@@ -56,17 +56,20 @@ def get_dataset(dataset_name, config):
     if dataset_name.lower() == "asvspoof2019":
         config["num_classes"] = 2
         return ASVspoof2019(datasets_config["asvspoof2019"], **args)
+    if dataset_name.lower() == "inthewild":
+        config["num_classes"] = 2
+        return IntheWild(datasets_config["inthewild"], **args)
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="sclw2v")
+    parser.add_argument("--model", type=str, default="w2v")
     parser.add_argument("--evalset", type=str, default="echofake")
     parser.add_argument("--eval", action="store_true")
     args = parser.parse_args()
 
-    assert args.model.lower() in ["rawnet2", "aasist", "sclw2v"], "Not supported model."
+    assert args.model.lower() in ["rawnet2", "aasist", "w2v"], "Not supported model."
 
     # read config
     config_name = f"configs/{args.model.lower()}.json"

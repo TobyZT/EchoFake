@@ -207,11 +207,11 @@ class ASVspoof2019(L.LightningDataModule):
 
 
 class IntheWildDataset(Dataset):
-    def __init__(self, base_dir, protocol_dir, pad_mode="random", max_len=64000):
+    def __init__(self, wav_dir, protocol_dir, pad_mode="random", max_len=64000):
         """
         In-the-Wild datamodule for evaluation
         """
-        self.base_dir = base_dir
+        self.wav_dir = wav_dir
         self.protocol_dir = protocol_dir
         self.list_IDs = []
         self.labels = []
@@ -238,29 +238,31 @@ class IntheWildDataset(Dataset):
 
     def __getitem__(self, index):
         key = self.list_IDs[index]
-        x = torchaudio.load(str(self.base_dir / f"{key}.wav"))[0].squeeze()
+        x = torchaudio.load(str(self.wav_dir / f"{key}.wav"))[0].squeeze()
         x = torch.Tensor(self.pad(x, self.max_len))
         y = torch.LongTensor([1]) if self.labels[index] == 1 else torch.LongTensor([0])
+        y = y.squeeze()
         return x, y
 
 
 class IntheWild(L.LightningDataModule):
-    def __init__(self, base_dir, protocol_dir, max_len=64000, **dataloaderArgs):
+    def __init__(self, base_dir, max_len=64000, **dataloaderArgs):
         super().__init__()
-        self.base_dir = Path(base_dir)
-        self.protocol_dir = Path(protocol_dir)
+        base_dir = Path(base_dir)
+        self.wav_dir = base_dir / "release_in_the_wild"
+        self.protocol_dir = base_dir / "wild_labels.txt"
         self.max_len = max_len
         self.dataloaderArgs = dataloaderArgs
 
     def setup(self, stage: str):
         self.trainset = IntheWildDataset(
-            self.base_dir, self.protocol_dir, pad_mode="random", max_len=self.max_len
+            self.wav_dir, self.protocol_dir, pad_mode="random", max_len=self.max_len
         )
         self.valset = IntheWildDataset(
-            self.base_dir, self.protocol_dir, pad_mode="random", max_len=self.max_len
+            self.wav_dir, self.protocol_dir, pad_mode="random", max_len=self.max_len
         )
         self.testset = IntheWildDataset(
-            self.base_dir, self.protocol_dir, pad_mode="normal", max_len=self.max_len
+            self.wav_dir, self.protocol_dir, pad_mode="normal", max_len=self.max_len
         )
 
     def train_dataloader(self):

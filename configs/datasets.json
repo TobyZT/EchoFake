@@ -1,4 +1,5 @@
 {
   "echofake": "./EchoFake",
-  "asvspoof2019": "/data1/datasets/ASVspoof2019/"
+  "asvspoof2019": "/data1/datasets/ASVspoof2019/",
+  "inthewild": "/data1/datasets/In-the-Wild/"
 }
