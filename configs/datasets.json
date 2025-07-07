@@ -1,11 +1,4 @@
 {
   "echofake": "./EchoFake",
-  "asvspoof2019": "/data1/datasets/ASVspoof2019/",
-  "num_classes": 2,
-  "label_mapping": {
-    "bonafide": 1,
-    "replay_bonafide": 0,
-    "fake": 0,
-    "replay_fake": 0
-  }
+  "asvspoof2019": "/data1/datasets/ASVspoof2019/"
 }

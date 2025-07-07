@@ -14,3 +14,8 @@ EchoFake/
 
 # exp
 exp*
+backup
+
+# checkpoints
+*.pth
+*.pt

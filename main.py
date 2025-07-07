@@ -14,7 +14,7 @@ from lightning.pytorch import loggers as pl_loggers
 from lightning.pytorch.callbacks import ModelCheckpoint
 import json
 
-from train import RawNet2Trainer, AASISTTrainer
+from train import RawNet2Trainer, AASISTTrainer, SCLW2VTrainer
 from data import EchoFakeModule, ASVspoof2019
 
 CUDA_VISIBLE_DEVICES = [1]
@@ -25,23 +25,34 @@ def get_trainer(model_name):
         return RawNet2Trainer
     elif model_name.lower() == "aasist":
         return AASISTTrainer
+    elif model_name.lower() == "sclw2v":
+        return SCLW2VTrainer
 
 
 def get_dataset(dataset_name, config):
     with open("configs/datasets.json", "r") as f:
         datasets_config = json.load(f)
 
-    config["num_classes"] = datasets_config["num_classes"]
-
     args = {
         "num_workers": config["train"]["num_workers"],
         "max_len": config["train"]["max_len"],
         "batch_size": config["train"]["batch_size"],
-        "label_mapping": datasets_config["label_mapping"],
     }
 
     if dataset_name.lower() == "echofake":
-        return EchoFakeModule(datasets_config["echofake"], **args)
+        label_mapping = (
+            {
+                "bonafide": 1,
+                "replay_bonafide": 0,
+                "fake": 0,
+                "replay_fake": 0,
+            }
+            if config["train"]["num_classes"] == 2
+            else None
+        )
+        return EchoFakeModule(
+            datasets_config["echofake"], label_mapping=label_mapping, **args
+        )
     if dataset_name.lower() == "asvspoof2019":
         config["num_classes"] = 2
         return ASVspoof2019(datasets_config["asvspoof2019"], **args)
@@ -50,13 +61,12 @@ def get_dataset(dataset_name, config):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="RawNet2")
-    parser.add_argument("--trainset", type=str, default="echofake")
+    parser.add_argument("--model", type=str, default="sclw2v")
     parser.add_argument("--evalset", type=str, default="echofake")
     parser.add_argument("--eval", action="store_true")
     args = parser.parse_args()
 
-    assert args.model.lower() in ["rawnet2", "aasist"], "Not supported model."
+    assert args.model.lower() in ["rawnet2", "aasist", "sclw2v"], "Not supported model."
 
     # read config
     config_name = f"configs/{args.model.lower()}.json"
@@ -103,7 +113,7 @@ if __name__ == "__main__":
     model_cls = get_trainer(args.model)
 
     if not args.eval:
-        dataloader = get_dataset(args.trainset, config)
+        dataloader = get_dataset(config["train"]["trainset"], config)
         model = model_cls(config=config)
         trainer.fit(model, dataloader)
         exit(0)
