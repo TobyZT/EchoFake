@@ -15,7 +15,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 import json
 
 from train import RawNet2Trainer, AASISTTrainer, W2VTrainer
-from data import EchoFakeModule, ASVspoof2019, IntheWild, ASVspoofEval
+from data import EchoFakeModule, ASVspoof2019, IntheWild, ASVspoofEval, WaveFake
 
 CUDA_VISIBLE_DEVICES = [1]
 
@@ -62,6 +62,8 @@ def get_dataset(dataset_name, config):
         return ASVspoofEval(datasets_config["asvspoof2021la"], **args)
     elif dataset_name.lower() in ["asvspoof2021df", "21df"]:
         return ASVspoofEval(datasets_config["asvspoof2021df"], **args)
+    elif dataset_name.lower() == "wavefake":
+        return WaveFake(datasets_config["wavefake"], **args)
 
 
 if __name__ == "__main__":
@@ -115,6 +117,7 @@ if __name__ == "__main__":
         enable_model_summary=True,
         callbacks=[checkpoint_callback],
         logger=logger,
+        limit_val_batches=100,
     )
     model_cls = get_trainer(args.model)
 

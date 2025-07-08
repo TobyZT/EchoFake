@@ -4,6 +4,8 @@ import torchaudio
 from torch.utils.data import Dataset, DataLoader
 from datasets import load_from_disk
 from pathlib import Path
+import librosa
+import glob
 
 from utils import *
 
@@ -321,6 +323,71 @@ class IntheWild(L.LightningDataModule):
         )
         self.testset = IntheWildDataset(
             self.wav_dir, self.protocol_dir, pad_mode="normal", max_len=self.max_len
+        )
+
+    def train_dataloader(self):
+        return DataLoader(self.trainset, shuffle=True, **self.dataloaderArgs)
+
+    def val_dataloader(self):
+        return DataLoader(self.valset, shuffle=False, **self.dataloaderArgs)
+
+    def test_dataloader(self):
+        return DataLoader(self.testset, shuffle=False, **self.dataloaderArgs)
+
+
+class WaveFakeDataset(Dataset):
+    def __init__(self, base_dir, pad_mode="random", max_len=64000):
+        """
+        In-the-Wild datamodule for evaluation
+        """
+        self.base_dir = base_dir
+        self.wav_paths = []
+        self.labels = []
+        if pad_mode == "random":
+            self.pad = pad_random
+        else:
+            self.pad = pad
+        self.max_len = max_len
+        self.parse_protocol()
+
+    def parse_protocol(self):
+        bonafide_list = glob.glob(str(self.base_dir / "wavs16" / "*.wav"))
+        fake_list = glob.glob(str(self.base_dir / "generated_audio" / "*" / "*.wav"))
+        for path in bonafide_list:
+            self.wav_paths.append(path)
+            self.labels.append(1)
+        for path in fake_list:
+            self.wav_paths.append(path)
+            self.labels.append(0)
+
+    def __len__(self):
+        return len(self.wav_paths)
+
+    def __getitem__(self, index):
+        path = self.wav_paths[index]
+        x, _ = librosa.load(path, sr=16000)
+        x = torch.Tensor(self.pad(x, self.max_len))
+        y = torch.LongTensor([1]) if self.labels[index] == 1 else torch.LongTensor([0])
+        y = y.squeeze()
+        return x, y
+
+
+class WaveFake(L.LightningDataModule):
+    def __init__(self, base_dir, max_len=64000, **dataloaderArgs):
+        super().__init__()
+        self.base_dir = Path(base_dir)
+        self.max_len = max_len
+        self.dataloaderArgs = dataloaderArgs
+
+    def setup(self, stage: str):
+        self.trainset = WaveFakeDataset(
+            self.base_dir, pad_mode="random", max_len=self.max_len
+        )
+        self.valset = WaveFakeDataset(
+            self.base_dir, pad_mode="random", max_len=self.max_len
+        )
+        self.testset = WaveFakeDataset(
+            self.base_dir, pad_mode="normal", max_len=self.max_len
         )
 
     def train_dataloader(self):
