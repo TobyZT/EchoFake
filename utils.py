@@ -5,6 +5,7 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
     precision_recall_curve,
+    roc_auc_score,
 )
 
 
@@ -63,15 +64,12 @@ def compute_f1(labels, preds, average="weighted"):
     return precision, recall, f1
 
 
-def compute_metrics(pred):
-    logits = pred.predictions
-    labels = pred.label_ids
-    preds = np.argmax(logits, axis=1)
-    return {
-        "precision": precision_score(labels, preds, average="macro"),
-        "recall": recall_score(labels, preds, average="macro"),
-        "f1": f1_score(labels, preds, average="macro"),
-    }
+# def compute_metrics(labels, preds, scores, average="weighted"):
+#     precision = precision_score(labels, preds, average=average)
+#     recall = recall_score(labels, preds, average=average)
+#     f1 = f1_score(labels, preds, average=average)
+#     auc = roc_auc_score(labels, scores)
+#     return precision, recall, f1, auc
 
 
 def compute_det_curve(target_scores, nontarget_scores):

@@ -46,13 +46,14 @@ class BaseTrainer(L.LightningModule):
         preds = torch.argmax(logits, dim=1)
         self.labels.extend(y.tolist())
         self.preds.extend(preds.tolist())
+        self.logits.extend(logits[:, 1].tolist())
         # if self.config["num_classes"] == 2:
         #     self.logits.extend(logits[:, 1].tolist())
-        # for i in range(x.size(0)):
-        #     if y[i] == 1:
-        #         self.target_scores.append(logits[i, 1].item())
-        #     else:
-        #         self.nontarget_scores.append(logits[i, 1].item())
+        for i in range(x.size(0)):
+            if y[i] == 1:
+                self.target_scores.append(logits[i, 1].item())
+            else:
+                self.nontarget_scores.append(logits[i, 1].item())
 
     def on_test_epoch_end(self):
 

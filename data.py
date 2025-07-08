@@ -206,6 +206,64 @@ class ASVspoof2019(L.LightningDataModule):
         return DataLoader(self.test_data, shuffle=False, **self.dataloaderArgs)
 
 
+class ASVspoofEvalDataset(Dataset):
+    def __init__(self, base_dir, protocol_dir, pad_mode="random", max_len=64000):
+        """
+        ASVspoof 2019LA / 2021LA / 2021DF datamodule for evaluation
+        """
+        self.base_dir = base_dir
+        self.protocol_dir = protocol_dir
+        self.list_IDs = []
+        self.labels = []
+        assert pad_mode in ["normal", "random"]
+        if pad_mode == "random":
+            self.pad = pad_random
+        else:
+            self.pad = pad
+        self.max_len = max_len
+        self.parse_protocol()
+
+    def parse_protocol(self):
+        with open(self.protocol_dir, "r") as f:
+            lines = f.readlines()
+            for line in lines:
+                _, key, _, _, label = line.strip().split(" ")
+                self.list_IDs.append(key)
+                if label == "bonafide":
+                    self.labels.append(1)
+                else:
+                    self.labels.append(0)
+
+    def __len__(self):
+        return len(self.list_IDs)
+
+    def __getitem__(self, index):
+        key = self.list_IDs[index]
+        audio_path = str(self.base_dir / f"flac/{key}.flac")
+        x = torchaudio.load(audio_path)[0].squeeze()
+        x = torch.Tensor(self.pad(x, self.max_len))
+        y = torch.LongTensor([1]) if self.labels[index] == 1 else torch.LongTensor([0])
+        y = y.squeeze()
+        return x, y
+
+
+class ASVspoofEval(L.LightningDataModule):
+    def __init__(self, base_dir, max_len=64000, **dataloaderArgs):
+        super().__init__()
+        self.base_dir = Path(base_dir)
+        self.protocol_dir = self.base_dir / "labels.txt"
+        self.max_len = max_len
+        self.dataloaderArgs = dataloaderArgs
+
+    def setup(self, stage: str):
+        self.testset = ASVspoofEvalDataset(
+            self.base_dir, self.protocol_dir, max_len=self.max_len
+        )
+
+    def test_dataloader(self):
+        return DataLoader(self.testset, shuffle=False, **self.dataloaderArgs)
+
+
 class IntheWildDataset(Dataset):
     def __init__(self, wav_dir, protocol_dir, pad_mode="random", max_len=64000):
         """
