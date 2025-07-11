@@ -3,7 +3,7 @@ import torch
 
 from models import RawNet2, AASIST, W2VLinear
 from utils import *
-from data import EchoFakeModule
+from data import EchoFake
 
 
 class BaseTrainer(L.LightningModule):

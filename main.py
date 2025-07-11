@@ -10,7 +10,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 import json
 
 from train import RawNet2Trainer, AASISTTrainer, W2VTrainer
-from data import EchoFakeModule, ASVspoof2019, IntheWild, ASVspoofEval, WaveFake
+from data import EchoFake, ASVspoof2019, IntheWild, ASVspoofEval, WaveFake
 
 CUDA_VISIBLE_DEVICES = [1]
 
@@ -45,21 +45,31 @@ def get_dataset(dataset_name, config):
         else None
     )
 
-    if dataset_name.lower() == "echofake":
-        return EchoFakeModule(
+    if dataset_name.lower() in ["echofake", "echo"]:
+        return EchoFake(
             datasets_config["echofake"], label_mapping=label_mapping, **args
         )
     elif dataset_name.lower() == "echofake_open":
-        return EchoFakeModule(
+        return EchoFake(
             datasets_config["echofake"],
             label_mapping=label_mapping,
             test_mode="open",
             **args,
         )
+    elif dataset_name.lower() in ["echofakeclean", "echofake_clean"]:
+        # dataset.filter(lambda row: row["label"] == "bonafide" or row["label"] == "fake")
+        config["num_classes"] = 2
+        return EchoFake(
+            datasets_config["echofakeclean"],
+            label_mapping=label_mapping,
+            test_mode="open",
+            **args,
+        )
+
     config["num_classes"] = 2
     if dataset_name.lower() in ["asvspoof2019", "asvspoof2019la", "19la"]:
         return ASVspoof2019(datasets_config["asvspoof2019"], **args)
-    elif dataset_name.lower() == "inthewild":
+    elif dataset_name.lower() in ["inthewild", "itw"]:
         return IntheWild(datasets_config["inthewild"], **args)
     elif dataset_name.lower() in ["asvspoof2021la", "21la"]:
         return ASVspoofEval(datasets_config["asvspoof2021la"], **args)

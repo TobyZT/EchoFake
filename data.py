@@ -43,7 +43,7 @@ class HuggingFaceAudioDataset(Dataset):
         return waveform, label
 
 
-class EchoFakeModule(L.LightningDataModule):
+class EchoFake(L.LightningDataModule):
     def __init__(
         self,
         dataset_path,
