@@ -52,6 +52,7 @@ class EchoFakeModule(L.LightningDataModule):
         num_workers=4,
         max_len=64000,
         label_mapping=None,
+        test_mode="closed",
     ):
         super().__init__()
         self.dataset_path = dataset_path
@@ -60,6 +61,7 @@ class EchoFakeModule(L.LightningDataModule):
         self.num_workers = num_workers
         self.max_len = max_len
         self.label_mapping = label_mapping
+        self.test_mode = test_mode
 
     def setup(self, stage=None):
         dataset = load_from_disk(self.dataset_path)
@@ -73,11 +75,13 @@ class EchoFakeModule(L.LightningDataModule):
             pad_mode="normal",
             label_mapping=self.label_mapping,
         )
+
+        if "close" in self.test_mode:
+            ds = dataset["closed_set_eval"]
+        else:
+            ds = dataset["open_set_eval"]
         self.test_dataset = HuggingFaceAudioDataset(
-            dataset["closed_set_eval"],
-            self.max_len,
-            pad_mode="normal",
-            label_mapping=self.label_mapping,
+            ds, self.max_len, pad_mode="normal", label_mapping=self.label_mapping
         )
 
     def train_dataloader(self):

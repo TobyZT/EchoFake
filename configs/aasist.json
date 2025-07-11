@@ -1,14 +1,14 @@
 {
   "train": {
-    "exp_name": "AASIST",
+    "exp_name": "AASIST-WaveFake",
     "batch_size": 32,
-    "num_epochs": 100,
+    "num_epochs": 20,
     "num_workers": 16,
     "max_len": 64600,
     "check_val_every_n_epoch": 1,
     "seed": 1145,
     "save_top_k": 1,
-    "trainset": "EchoFake",
+    "trainset": "19la",
     "num_classes": 2
   },
   "d_args": {

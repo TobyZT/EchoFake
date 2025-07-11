@@ -1,8 +1,3 @@
-"""
-Training stage 2 - train classifier for audio deepfake detection
-
-"""
-
 import lightning as L
 import torch
 import torch.nn as nn
@@ -39,19 +34,27 @@ def get_dataset(dataset_name, config):
         "batch_size": config["train"]["batch_size"],
     }
 
+    label_mapping = (
+        {
+            "bonafide": 1,
+            "replay_bonafide": 0,
+            "fake": 0,
+            "replay_fake": 0,
+        }
+        if config["train"]["num_classes"] == 2
+        else None
+    )
+
     if dataset_name.lower() == "echofake":
-        label_mapping = (
-            {
-                "bonafide": 1,
-                "replay_bonafide": 0,
-                "fake": 0,
-                "replay_fake": 0,
-            }
-            if config["train"]["num_classes"] == 2
-            else None
-        )
         return EchoFakeModule(
             datasets_config["echofake"], label_mapping=label_mapping, **args
+        )
+    elif dataset_name.lower() == "echofake_open":
+        return EchoFakeModule(
+            datasets_config["echofake"],
+            label_mapping=label_mapping,
+            test_mode="open",
+            **args,
         )
     config["num_classes"] = 2
     if dataset_name.lower() in ["asvspoof2019", "asvspoof2019la", "19la"]:

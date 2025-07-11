@@ -107,6 +107,8 @@ class AASISTTrainer(BaseTrainer):
         self.model = AASIST(
             d_args=config["d_args"], num_classes=config["train"]["num_classes"]
         )
+        # states = torch.load("models/weights/AASIST.pth")
+        # self.model.load_state_dict(states)
         self.ce_loss = torch.nn.CrossEntropyLoss()
 
     def configure_optimizers(self):
